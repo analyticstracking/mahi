@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategic Partner | Data & Scale</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+       :root {
+            /* --- BACKGROUNDS --- */
+            --bg-dark: #050505; 
+            --bg-surface: #141414; 
+            --bg-subtle: #1f1f1f; 
+            --border-subtle: #333333;
+
+            /* --- THE ACID GREEN SUITE --- */
+            --green-primary: #ccff00; 
+            --green-hover: #d4ff33;   
+            --green-depth: #668000;   
+            --green-dim: rgba(204, 255, 0, 0.15);
+
+            /* --- TEXT --- */
+            --text-main: #f0f0f0; 
+            --text-muted: #8f8f8f; 
+            --text-on-green: #0a0a0a; 
+            
+            /* --- UTILITIES --- */
+            --glass-blur: blur(24px);
+            --font-main: 'Inter', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            /* REFINEMENT 2: Technical Grid Background */
+            background-image: 
+                linear-gradient(var(--bg-subtle) 1px, transparent 1px),
+                linear-gradient(90deg, var(--bg-subtle) 1px, transparent 1px);
+            background-size: 50px 50px;
+            color: var(--text-main);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+            width: 100vw;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* REFINEMENT 1: FILM GRAIN TEXTURE */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0.07;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* REFINEMENT 2: VIGNETTE MASK FOR GRID */
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, transparent 0%, var(--bg-dark) 90%);
+        }
+
+        /* REFINEMENT 3: TECHNICAL DEBRIS (HUD) */
+        .hud-mark {
+            position: fixed;
+            z-index: 9000;
+            pointer-events: none;
+            color: var(--border-subtle);
+            font-family: var(--font-mono);
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+        .hud-tl { top: 20px; left: 20px; border-top: 1px solid var(--border-subtle); border-left: 1px solid var(--border-subtle); width: 20px; height: 20px; }
+        .hud-tr { top: 20px; right: 20px; border-top: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); width: 20px; height: 20px; }
+        .hud-bl { bottom: 20px; left: 20px; border-bottom: 1px solid var(--border-subtle); border-left: 1px solid var(--border-subtle); width: 20px; height: 20px; }
+        .hud-br { bottom: 20px; right: 20px; border-bottom: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle); width: 20px; height: 20px; }
+        
+        .hud-coords {
+            bottom: 25px;
+            right: 50px;
+            color: var(--green-depth);
+        }
+
+        /* --- FOCUS STATES --- */
+        *:focus-visible {
+            outline: 2px solid var(--green-primary);
+            outline-offset: 4px;
+            color: var(--green-primary);
+        }
+
+        /* --- CURSOR FOLLOWER --- */
+        .cursor-follower {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            background-color: var(--green-primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s cubic-bezier(0.19, 1, 0.22, 1), 
+                        height 0.3s cubic-bezier(0.19, 1, 0.22, 1),
+                        background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            mix-blend-mode: normal; 
+            opacity: 0.9;
+            /* REFINEMENT 4: GLOW */
+            box-shadow: 0 0 15px var(--green-primary);
+        }
+
+        .cursor-follower::after {
+            content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>');
+            width: 24px;
+            height: 24px;
+            opacity: 0;
+            transform: scale(0);
+            transition: opacity 0.2s, transform 0.2s;
+            display: block;
+        }
+
+        body.hovering .cursor-follower {
+            width: 80px;
+            height: 80px;
+            background-color: var(--green-primary);
+            opacity: 1;
+        }
+
+        body.hovering .cursor-follower::after {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* --- SCROLL WRAPPER --- */
+        .main-wrapper {
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            will-change: transform;
+        }
+
+        /* --- SECTION 1: SPATIAL DRIFT --- */
+        .drift-canvas {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        .drift-instructions {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--text-muted);
+            font-family: var(--font-mono); /* Changed to Mono for Tech feel */
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            pointer-events: none;
+            font-size: 0.7rem;
+            opacity: 0.6;
+            text-align: center;
+            width: 100%;
+        }
+        
+        /* ORNAMENTATION: Dashed line under instructions */
+        .drift-instructions::after {
+            content: "";
+            display: block;
+            width: 1px;
+            height: 50px;
+            background: linear-gradient(to bottom, var(--text-muted), transparent);
+            margin: 10px auto;
+        }
+
+        .drift-card {
+            position: absolute;
+            background: rgba(10, 10, 10, 0.85); /* Slightly darker */
+            border: 1px solid var(--border-subtle);
+            backdrop-filter: blur(10px); /* Lower blur for performance */
+            -webkit-backdrop-filter: blur(10px);
+            padding: 2rem;
+            width: 320px;
+            border-radius: 0px; /* SHARP CORNERS = BRUTALIST */
+            cursor: grab;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            transition: border-color 0.3s, transform 0.1s, box-shadow 0.3s;
+            transform-style: preserve-3d;
+            touch-action: none;
+        }
+        
+        /* Corner accents for drift cards */
+        .drift-card::before {
+            content: "+";
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            color: var(--border-subtle);
+            font-family: var(--font-mono);
+        }
+
+        .drift-card:active {
+            cursor: grabbing;
+            border-color: var(--green-primary);
+            box-shadow: 0 0 25px var(--green-dim);
+        }
+
+        .drift-card h3 {
+            color: var(--green-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transform: translateZ(20px);
+            /* REFINEMENT 4: TEXT GLOW */
+            text-shadow: 0 0 8px rgba(204, 255, 0, 0.3);
+        }
+
+        .drift-card p {
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            line-height: 1.4;
+            color: var(--text-main);
+            transform: translateZ(10px);
+        }
+
+        .profile-img-card {
+            padding: 0;
+            overflow: hidden;
+            height: 320px;
+            border-color: var(--green-depth);
+        }
+
+        .profile-img-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%);
+            transition: filter 0.3s;
+        }
+        
+        .profile-img-card:hover img {
+            filter: grayscale(0%);
+        }
+
+        /* --- SECTION 2: VARIABLE TYPOGRAPHY --- */
+        .kinetic-section {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 5vw;
+        }
+
+        .variable-headline {
+            font-size: 7vw;
+            line-height: 0.9;
+            text-align: center;
+            color: var(--text-main);
+            text-transform: uppercase;
+            font-variation-settings: 'wght' 100;
+            transition: font-variation-settings 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: default;
+        }
+        
+        .variable-headline:hover {
+            color: var(--text-main); 
+            text-shadow: 0 0 30px var(--green-dim);
+        }
+
+        .sub-headline {
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            text-align: center;
+            max-width: 600px;
+            margin: 3rem auto 0 auto;
+        }
+
+        /* --- SECTION 3: GLASS STACK --- */
+        .stack-container {
+            width: 100%;
+            position: relative;
+            padding-bottom: 10vh;
+        }
+
+        .section-header-stack {
+            padding: 10vh 5vw 5vh 5vw;
+            font-size: 2rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: transparent;
+            -webkit-text-stroke: 1px var(--green-depth); 
+            text-align: center;
+            /* REFINEMENT: Opacity */
+            opacity: 0.5;
+        }
+
+        .stack-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .card-stack {
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            padding: 4rem 2rem;
+        }
+        
+        .card-inner {
+            width: 900px;
+            max-width: 90%;
+            height: 600px;
+            max-height: 70vh;
+            background: var(--bg-surface);
+            border: 1px solid var(--bg-subtle);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
+            border-radius: 4px; /* Brutalist sharp */
+            overflow: hidden;
+            position: relative;
+            transform-origin: center top;
+            transition: border-color 0.3s;
+            cursor: pointer;
+        }
+
+        .card-inner:hover {
+            border-color: var(--green-hover);
+            box-shadow: 0 0 30px var(--green-dim);
+        }
+        
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%) brightness(0.6);
+            opacity: 0.5;
+            transition: filter 0.5s ease, opacity 0.5s;
+            z-index: 0;
+        }
+        
+        .card-inner:hover .card-img {
+            filter: grayscale(0%) brightness(1);
+            opacity: 1;
+        }
+
+        .card-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 2rem;
+            background: linear-gradient(to top, var(--bg-dark), transparent);
+            z-index: 2;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .card-title {
+            font-size: 2rem;
+            text-transform: uppercase;
+            color: var(--text-main);
+            margin-bottom: 0.8rem;
+        }
+        
+        /* REFINEMENT 3: TYPOGRAPHY HIERARCHY - THE BADGES */
+        .card-tags {
+            font-family: var(--font-mono);
+            color: var(--green-primary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            
+            /* The "Code Badge" Look */
+            display: inline-block;
+            border: 1px solid var(--green-depth);
+            padding: 6px 12px;
+            background: rgba(204, 255, 0, 0.05);
+            backdrop-filter: blur(4px);
+        }
+
+        /* --- FOOTER --- */
+        .magnetic-btn {
+            display: inline-block;
+            padding: 2rem 4rem;
+            border: 1px solid var(--green-primary);
+            border-radius: 100px;
+            color: var(--green-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            text-decoration: none;
+            background: transparent;
+            position: relative;
+            transition: all 0.3s;
+            margin-top: 2rem;
+            /* Glow for main CTA */
+            text-shadow: 0 0 10px rgba(204,255,0,0.4);
+            box-shadow: 0 0 10px rgba(204,255,0,0.1);
+        }
+        
+        .magnetic-btn:hover {
+            background: var(--green-primary);
+            color: var(--text-on-green);
+            box-shadow: 0 0 40px var(--green-dim);
+            border-color: var(--green-primary);
+            text-shadow: none; /* Remove text shadow on hover for readability */
+        }
+
+        footer {
+            min-height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-top: 1px solid var(--bg-subtle);
+            position: relative;
+            z-index: 10;
+            background: var(--bg-dark);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 3rem;
+            margin-top: 4rem;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            transition: color 0.3s;
+            position: relative;
+        }
+        
+        .footer-links a:hover { 
+            color: var(--green-primary);
+            text-shadow: 0 0 8px var(--green-dim);
+        }
+        
+        /* Tiny arrow animation */
+        .footer-links a:hover::after {
+            content: "<";
+            position: absolute;
+            right: -15px;
+            color: var(--green-primary);
+        }
+
+        /* --- MODAL --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 11000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            backdrop-filter: blur(10px);
+        }
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90vh;
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 1px solid var(--bg-subtle);
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+        .close-btn {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            color: var(--green-primary);
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 11001;
+        }
+
+        /* --- RESPONSIVE FIXES --- */
+        @media (max-width: 900px) {
+            .drift-canvas { height: 100vh; overflow: hidden; }
+            .drift-card { width: 260px; padding: 1.5rem; }
+            .card-stack { height: 60vh; top: 20vh; }
+            .card-inner { width: 95%; height: 100%; }
+            .cursor-follower { display: none; }
+            .magnetic-btn { padding: 1.5rem 2rem; font-size: 0.9rem; }
+            .variable-headline { font-size: 15vw; }
+            .hud-mark, .hud-coords { display: none; } /* Hide HUD on mobile to save space */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="noise-overlay"></div>
+    <div class="vignette"></div>
+
+    <div class="hud-mark hud-tl"></div>
+    <div class="hud-mark hud-tr"></div>
+    <div class="hud-mark hud-bl"></div>
+    <div class="hud-mark hud-br"></div>
+    <div class="hud-mark hud-coords">X: 1024 Y: 768</div>
+
+    <div class="cursor-follower"></div>
+
+    <div id="imageModal" class="modal" role="dialog" aria-modal="true" aria-label="Project Preview">
+        <button class="close-btn hover-trigger" aria-label="Close Modal" tabindex="0">&times;</button>
+        <img class="modal-content" id="modalImg" alt="Enlarged project preview">
+    </div>
+
+    <main class="main-wrapper" id="content">
+
+        <section class="drift-canvas" id="drift-zone">
+            <p class="drift-instructions">/// INITIALIZING TRACKING SEQUENCE ///</p>
+
+            <div class="drift-card profile-img-card hover-trigger" tabindex="0" style="top: 20%; left: 10%; width: 280px; z-index: 1;">
+                <img src="https://drive.google.com/thumbnail?id=11T3XOhYIff-ZxmDkIawdZA4uWRRt1vnA&sz=w1200" alt="Profile of Partner" class="zoomable" role="button" aria-label="View Profile Image">
+            </div>
+
+            <div class="drift-card hover-trigger" tabindex="0" style="top: 50%; left: 35%; border-color: var(--green-depth); z-index: 2;">
+                <h3 style="color: var(--green-depth)">Current Role</h3>
+                <p>Virtual Tracking Partner for a USA-based firm.</p>
+            </div>
+
+            <div class="drift-card hover-trigger" tabindex="0" style="top: 15%; left: 60%; z-index: 3;">
+                <h3>Volume</h3>
+                <p>Audited / set up / fixed over 100 projects.</p>
+            </div>
+
+            <div class="drift-card hover-trigger" tabindex="0" style="top: 60%; left: 65%; border-color: var(--text-muted); z-index: 4;">
+                <h3 style="color: var(--text-main)">Timeline</h3>
+                <p>2.5 years of technical experience.</p>
+            </div>
+        </section>
+
+        <section class="kinetic-section">
+            <h2 class="variable-headline" id="var-text">
+                DEDICATED<br>DYNAMIC<br>ROI-DRIVEN
+            </h2>
+            <div class="sub-headline">
+                <p>Technical Analytics & Conversion Tracking.</p>
+                <p style="color: var(--green-primary); margin-top: 1rem; text-shadow: 0 0 10px rgba(204,255,0,0.3);">
+                    Recover lost conversions by 20 to 40%. Surface transparency and predictability in a cookieless world.
+                </p>
+            </div>
+        </section>
+
+        <section class="stack-container">
+            <div class="section-header-stack">Selected Works</div>
+            
+            <div class="stack-wrapper">
+                
+                <div class="card-stack" id="card-1">
+                    <div class="card-inner hover-trigger" tabindex="0" role="button" aria-label="Project 1: E-Com Audit">
+                        <img src="https://drive.google.com/thumbnail?id=14omhKySbxGDbK1WPry9C-VizYQ7b-hdH&sz=w1200" class="card-img zoomable" alt="E-Com Audit Dashboard">
+                        <div class="card-info">
+                            <h3 class="card-title">E-Com Audit</h3>
+                            <span class="card-tags">GA4 Setup / CAPI</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-stack" id="card-2">
+                    <div class="card-inner hover-trigger" tabindex="0" role="button" aria-label="Project 2: SaaS Tracking">
+                        <img src="https://drive.google.com/thumbnail?id=1ifQ4wBozdWy6W6k-g4E3MaKq9UTtHEO0&sz=w1200" class="card-img zoomable" alt="SaaS Tracking Setup">
+                        <div class="card-info">
+                            <h3 class="card-title">SaaS Tracking</h3>
+                            <span class="card-tags">GTM / Mixpanel</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-stack" id="card-3">
+                    <div class="card-inner hover-trigger" tabindex="0" role="button" aria-label="Project 3: Lead Gen Ops">
+                        <img src="https://drive.google.com/thumbnail?id=1wGQwaLhOtBPLsry2g3ueyV6gdY0FrnGP&sz=w1200" class="card-img zoomable" alt="Lead Generation Operations">
+                        <div class="card-info">
+                            <h3 class="card-title">Lead Gen Ops</h3>
+                            <span class="card-tags">Offline Conversions</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-stack" id="card-4">
+                    <div class="card-inner hover-trigger" tabindex="0" role="button" aria-label="Project 4: Data Warehouse">
+                        <img src="https://drive.google.com/thumbnail?id=1fbeZ_YWKuVtgK1AGbJntdakRqPXlz8AP&sz=w1200" class="card-img zoomable" alt="Data Warehouse Architecture">
+                        <div class="card-info">
+                            <h3 class="card-title">Data Warehouse</h3>
+                            <span class="card-tags">BigQuery / Looker</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <footer>
+            <a href="https://drive.google.com/" class="magnetic-btn hover-trigger" id="mag-btn" tabindex="0">View Full Project Archive</a>
+
+            <div class="footer-links">
+                <a href="https://www.linkedin.com" class="hover-trigger" tabindex="0" target="_blank">LinkedIn ↗</a>
+                <a href="mailto:mailmahiahmed@gmail.com" class="hover-trigger" tabindex="0">Email ↗</a>
+                <a href="https://meet.google.com" class="hover-trigger" tabindex="0" target="_blank">Book A Meeting ↗</a>
+                <a href="https://www.youtube.com" class="hover-trigger" tabindex="0" target="_blank">YouTube ↗</a>
+            </div>
+
+        </footer>
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger, Draggable);
+
+        // --- 1. LENIS SMOOTH SCROLL ---
+        const lenis = new Lenis({
+            duration: 0.9,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            smooth: true,
+        });
+
+        lenis.on('scroll', ScrollTrigger.update);
+
+        gsap.ticker.add((time) => {
+            lenis.raf(time * 1000);
+        });
+
+        // --- 2. ACCESSIBILITY KEYBOARD HELPERS ---
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                if(document.activeElement.classList.contains('zoomable') || 
+                   document.activeElement.classList.contains('card-inner') ||
+                   document.activeElement.classList.contains('close-btn')) {
+                    document.activeElement.click();
+                }
+            }
+            if (e.key === 'Escape') {
+                document.getElementById("imageModal").style.display = "none";
+            }
+        });
+
+        // --- 3. HUD COORDINATE TRACKER (NEW) ---
+        const hudCoords = document.querySelector('.hud-coords');
+        document.addEventListener('mousemove', (e) => {
+            if(hudCoords) {
+                hudCoords.textContent = `X: ${e.clientX} Y: ${e.clientY}`;
+            }
+        });
+
+        // --- 4. SPATIAL TILT EFFECT ---
+        if (window.innerWidth > 900) {
+            const driftSection = document.getElementById('drift-zone');
+            const driftCards = document.querySelectorAll('.drift-card');
+            
+            driftSection.addEventListener('mousemove', (e) => {
+                const xPos = (e.clientX / window.innerWidth - 0.5) * 2;
+                const yPos = (e.clientY / window.innerHeight - 0.5) * 2;
+
+                driftCards.forEach(card => {
+                    gsap.to(card, {
+                        rotationY: xPos * 5,
+                        rotationX: -yPos * 5,
+                        ease: "power1.out",
+                        duration: 1
+                    });
+                });
+            });
+        }
+
+        // --- 5. VARIABLE FONT INTERACTIVITY ---
+        const headline = document.getElementById('var-text');
+        if (window.innerWidth > 900) {
+            document.addEventListener('mousemove', (e) => {
+                const centerX = window.innerWidth / 2;
+                const dist = Math.abs(e.clientX - centerX);
+                const maxDist = window.innerWidth / 2;
+                
+                let weight = gsap.utils.mapRange(0, maxDist, 900, 100, dist);
+                weight = Math.max(100, Math.min(900, weight));
+
+                gsap.to(headline, {
+                    fontVariationSettings: `'wght' ${weight}`,
+                    duration: 0.5,
+                    ease: "power2.out"
+                });
+            });
+        }
+
+        // --- 6. DRIFT CARDS LOGIC ---
+        let highestZ = 100;
+        const cards = document.querySelectorAll('.drift-card');
+
+        cards.forEach(card => {
+            Draggable.create(card, {
+                type: "x,y",
+                edgeResistance: 0.65,
+                bounds: ".drift-canvas", 
+                inertia: true,
+                onPress: function() {
+                    highestZ++;
+                    gsap.to(this.target, { zIndex: highestZ, duration: 0.1 });
+                    gsap.to(this.target, { scale: 1.05, duration: 0.2 });
+                    document.body.classList.add('hovering');
+                },
+                onRelease: function() {
+                    gsap.to(this.target, { scale: 1, duration: 0.2 });
+                    document.body.classList.remove('hovering');
+                },
+                onDragStart: function() {
+                    gsap.to(this.target, { z: 50, duration: 0.3 }); 
+                },
+                onDragEnd: function() {
+                      gsap.to(this.target, { z: 0, duration: 0.5 });
+                }
+            });
+        });
+
+        // --- 7. GLASS STACK ANIMATION ---
+        const stackCards = gsap.utils.toArray(".card-stack");
+        
+        stackCards.forEach((card, index) => {
+            if(index === stackCards.length - 1) return; 
+
+            const inner = card.querySelector('.card-inner');
+            
+            gsap.to(inner, {
+                scale: 0.85 + (0.04 * index),
+                y: -30,
+                opacity: 0.4,
+                filter: "blur(10px)",
+                scrollTrigger: {
+                    trigger: card,
+                    start: "top top",
+                    end: "bottom top",
+                    scrub: true,
+                }
+            });
+        });
+
+        // --- 8. INTELLIGENT CURSOR ---
+        const follower = document.querySelector('.cursor-follower');
+
+        window.addEventListener('mousemove', (e) => {
+            gsap.to(follower, { 
+                x: e.clientX, 
+                y: e.clientY, 
+                duration: 0.1, 
+                ease: "power2.out" 
+            });
+
+            if(e.target.classList.contains('hover-trigger') || e.target.closest('.hover-trigger')) {
+                document.body.classList.add('hovering');
+            } else {
+                document.body.classList.remove('hovering');
+            }
+        });
+
+        // --- 9. MAGNETIC BUTTON ---
+        const magBtn = document.getElementById('mag-btn');
+        if (window.innerWidth > 900) {
+            document.addEventListener('mousemove', (e) => {
+                const rect = magBtn.getBoundingClientRect();
+                const distance = Math.hypot(e.clientX - (rect.left + rect.width / 2), e.clientY - (rect.top + rect.height / 2));
+                
+                if (distance < 150) {
+                    const x = (e.clientX - (rect.left + rect.width / 2)) * 0.3;
+                    const y = (e.clientY - (rect.top + rect.height / 2)) * 0.3;
+                    gsap.to(magBtn, { x: x, y: y, duration: 0.2 });
+                } else {
+                    gsap.to(magBtn, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1, 0.3)" });
+                }
+            });
+        }
+
+        // --- 10. MODAL ---
+        const modal = document.getElementById("imageModal");
+        const modalImg = document.getElementById("modalImg");
+        const closeBtn = document.getElementsByClassName("close-btn")[0];
+        
+        const triggers = document.querySelectorAll('.zoomable, .card-inner');
+
+        triggers.forEach(trigger => {
+            trigger.addEventListener('click', function(e) {
+                let imgSource;
+                if(this.tagName === 'IMG') {
+                    imgSource = this.src;
+                } else {
+                    const childImg = this.querySelector('img');
+                    if(childImg) imgSource = childImg.src;
+                }
+
+                if(imgSource) {
+                    e.stopPropagation(); 
+                    modal.style.display = "block";
+                    modalImg.src = imgSource;
+                    closeBtn.focus(); 
+                }
+            });
+        });
+
+        closeBtn.onclick = function() { modal.style.display = "none"; }
+        modal.onclick = function(event) { if (event.target === modal) modal.style.display = "none"; }
+
+    </script>
+</body>
+</html>
